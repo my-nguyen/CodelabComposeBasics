@@ -3,6 +3,9 @@ package com.nguyen.codelab_compose_basics
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -94,17 +97,27 @@ fun OnboardingPreview() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val extraPadding = if (expanded) 48.dp else 0.dp
+    // use the animateDpAsState composable which returns a State object whose value will continuously
+    // be updated by the animation until it finishes. It takes a "target value" whose type is Dp
+    // animateDpAsState takes an optional animationSpec parameter that lets you customize the animation
+    // The spring spec does not take any time-related parameters. Instead it relies on physical
+    // properties (damping and stiffness) to make animations more natural
+    val extraPadding by animateDpAsState(
+        if (expanded) 48.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
 
     Surface(
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
         Row(modifier = Modifier.padding(24.dp)) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(bottom = extraPadding)
+            Column(modifier = Modifier
+                .weight(1f)
+                .padding(bottom = extraPadding.coerceAtLeast(0.dp))
             ) {
                 Text(text = "Hello, ")
                 Text(text = name)
